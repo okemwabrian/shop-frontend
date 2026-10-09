@@ -7,8 +7,6 @@ import { useCart } from '../context/CartContext.jsx'
 import { money } from '../utils/format.js'
 
 const qtyButton = 'h-8 w-8 rounded-md border border-gray-300 bg-white'
-const checkoutButton =
-  'mt-4 w-full cursor-not-allowed rounded-md bg-orange-600 py-2.5 font-semibold text-white opacity-50'
 
 export default function Cart() {
   const { cart, loading, error: loadError, refresh, setQuantity, remove } = useCart()
@@ -140,9 +138,12 @@ export default function Cart() {
             <span>{money(cart.total)}</span>
           </div>
         </div>
-        <button type="button" disabled className={checkoutButton}>
-          Checkout (coming in Phase 2)
-        </button>
+        <Link
+          to="/checkout"
+          className="mt-4 block rounded-md bg-orange-600 py-2.5 text-center font-semibold text-white hover:bg-orange-700"
+        >
+          Proceed to checkout
+        </Link>
         <p className="mt-2 text-xs text-gray-500">
           Free delivery on orders from KES 5,000.
         </p>

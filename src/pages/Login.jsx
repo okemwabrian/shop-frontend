@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { errorMessage } from '../api/client.js'
 import { useAuth } from '../context/AuthContext.jsx'
 
@@ -97,6 +97,20 @@ export default function Login() {
             required
           />
         </label>
+
+        {isRegister && (
+          <p className="text-xs text-gray-500">
+            By creating an account you agree to our{' '}
+            <Link to="/terms" className="underline">
+              Terms
+            </Link>{' '}
+            and{' '}
+            <Link to="/privacy" className="underline">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        )}
 
         {error && (
           <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">

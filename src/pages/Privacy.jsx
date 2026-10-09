@@ -1,3 +1,5 @@
-export default function Placeholder() {
-  return <h1 className="text-2xl font-bold">This page is coming soon.</h1>
+import LegalPage from '../components/LegalPage.jsx'
+
+export default function Privacy() {
+  return <LegalPage name="privacy-policy" />
 }

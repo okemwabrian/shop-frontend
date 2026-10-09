@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { errorMessage } from '../api/client.js'
-import { getProduct } from '../api/shop.js'
+import { getProduct, getShareLink } from '../api/shop.js'
 import ErrorBox from '../components/ErrorBox.jsx'
 import Loading from '../components/Loading.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { useWishlist } from '../context/WishlistContext.jsx'
 import { money } from '../utils/format.js'
+import { openInNewTab } from '../utils/links.js'
 
 export default function ProductDetails() {
   const { id } = useParams()
@@ -84,6 +85,15 @@ export default function ProductDetails() {
       setActionError(errorMessage(err))
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function share() {
+    setActionError('')
+    try {
+      await openInNewTab(() => getShareLink(product.id))
+    } catch (err) {
+      setActionError(errorMessage(err))
     }
   }
 
@@ -166,6 +176,13 @@ export default function ProductDetails() {
             : has(product.id)
               ? '\u2665 Saved to wishlist'
               : '\u2661 Save to wishlist'}
+        </button>
+        <button
+          type="button"
+          onClick={share}
+          className="ml-3 mt-4 rounded-md border border-green-600 px-4 py-2 text-sm text-green-700"
+        >
+          Share on WhatsApp
         </button>
 
         {actionError && (

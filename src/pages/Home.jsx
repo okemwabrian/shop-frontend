@@ -5,6 +5,7 @@ import { getCategories, getProducts } from '../api/shop.js'
 import ErrorBox from '../components/ErrorBox.jsx'
 import Loading from '../components/Loading.jsx'
 import ProductCard from '../components/ProductCard.jsx'
+import RecentlyViewed from '../components/RecentlyViewed.jsx'
 
 const categoryClass =
   'rounded-lg border border-gray-200 bg-white p-4 text-center text-sm font-medium hover:border-orange-500 hover:text-orange-600'
@@ -79,6 +80,7 @@ export default function Home() {
           </div>
         )}
       </section>
+      <RecentlyViewed />
     </div>
   )
 }

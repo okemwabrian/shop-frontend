@@ -6,12 +6,14 @@ import ErrorBox from '../components/ErrorBox.jsx'
 import Loading from '../components/Loading.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useCart } from '../context/CartContext.jsx'
+import { useWishlist } from '../context/WishlistContext.jsx'
 import { money } from '../utils/format.js'
 
 export default function ProductDetails() {
   const { id } = useParams()
   const { user } = useAuth()
   const { add } = useCart()
+  const { has, toggle } = useWishlist()
   const navigate = useNavigate()
   const location = useLocation()
   const [product, setProduct] = useState(null)
@@ -21,6 +23,7 @@ export default function ProductDetails() {
   const [actionError, setActionError] = useState('')
   const [message, setMessage] = useState('')
   const [adding, setAdding] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -64,6 +67,23 @@ export default function ProductDetails() {
       setActionError(errorMessage(err))
     } finally {
       setAdding(false)
+    }
+  }
+
+  async function saveForLater() {
+    if (!user) {
+      navigate('/login', { state: { from: location.pathname } })
+      return
+    }
+
+    setActionError('')
+    setSaving(true)
+    try {
+      await toggle(product)
+    } catch (err) {
+      setActionError(errorMessage(err))
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -134,6 +154,19 @@ export default function ProductDetails() {
             </button>
           </div>
         )}
+
+        <button
+          type="button"
+          onClick={saveForLater}
+          disabled={saving}
+          className="mt-4 rounded-md border border-gray-300 px-4 py-2 text-sm disabled:opacity-50"
+        >
+          {saving
+            ? 'Saving...'
+            : has(product.id)
+              ? '\u2665 Saved to wishlist'
+              : '\u2661 Save to wishlist'}
+        </button>
 
         {actionError && (
           <p className="mt-3 text-sm text-red-600">{actionError}</p>

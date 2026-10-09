@@ -3,8 +3,10 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react'
+import { errorMessage } from '../api/client.js'
 import * as shop from '../api/shop.js'
 import { useAuth } from './AuthContext.jsx'
 
@@ -12,58 +14,89 @@ const WishlistContext = createContext(null)
 
 export function WishlistProvider({ children }) {
   const { user } = useAuth()
-  const [wishlist, setWishlist] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(Boolean(user))
   const [error, setError] = useState('')
+  const requestId = useRef(0)
 
   const refresh = useCallback(async () => {
+    const currentRequestId = ++requestId.current
     if (!user) {
-      setWishlist([])
+      setItems([])
       setError('')
+      setLoading(false)
       return
     }
 
     setLoading(true)
     setError('')
-
     try {
-      setWishlist(await shop.getWishlist())
+      const result = await shop.getWishlist()
+      if (currentRequestId === requestId.current) setItems(result)
     } catch (err) {
-      setError(err?.message || 'Could not load wishlist.')
+      if (currentRequestId === requestId.current) {
+        setError(errorMessage(err))
+      }
+      throw err
     } finally {
-      setLoading(false)
+      if (currentRequestId === requestId.current) setLoading(false)
     }
   }, [user])
 
   useEffect(() => {
-    if (user) void refresh()
-    else setWishlist([])
-  }, [refresh, user])
+    void refresh().catch(() => {})
+  }, [refresh])
 
-  async function add(productId) {
-    await shop.addWish(productId)
-    await refresh()
+  const has = useCallback(
+    (productId) =>
+      items.some((product) => String(product.id) === String(productId)),
+    [items],
+  )
+
+  async function toggle(product) {
+    if (has(product.id)) {
+      await shop.removeWish(product.id)
+      setItems((current) =>
+        current.filter((item) => String(item.id) !== String(product.id)),
+      )
+    } else {
+      await shop.addWish(product.id)
+      setItems((current) => {
+        if (current.some((item) => String(item.id) === String(product.id))) {
+          return current
+        }
+        return [product, ...current]
+      })
+    }
+    setError('')
   }
 
   async function remove(productId) {
     await shop.removeWish(productId)
-    await refresh()
+    setItems((current) =>
+      current.filter((item) => String(item.id) !== String(productId)),
+    )
+    setError('')
   }
 
   async function moveToCart(productId) {
     await shop.moveWishToCart(productId)
-    await refresh()
+    setItems((current) =>
+      current.filter((item) => String(item.id) !== String(productId)),
+    )
+    setError('')
   }
 
   return (
     <WishlistContext.Provider
-      value={{ wishlist, loading, error, refresh, add, remove, moveToCart }}
+      value={{ items, loading, error, has, toggle, remove, moveToCart, refresh }}
     >
       {children}
     </WishlistContext.Provider>
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useWishlist() {
   return useContext(WishlistContext)
 }

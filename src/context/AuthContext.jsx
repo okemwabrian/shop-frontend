@@ -15,6 +15,11 @@ export function AuthProvider({ children }) {
     setUser(data.user)
   }
 
+  function updateUser(newUser) {
+    localStorage.setItem('user', JSON.stringify(newUser))
+    setUser(newUser)
+  }
+
   async function login(email, password) {
     save(await shop.login({ email, password }))
   }
@@ -27,7 +32,7 @@ export function AuthProvider({ children }) {
     try {
       await shop.logoutApi()
     } catch {
-      // The token may already be invalid, we log out locally anyway.
+      // the token may already be invalid, we log out locally anyway
     }
 
     localStorage.removeItem('token')
@@ -36,7 +41,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

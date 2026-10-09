@@ -1,74 +1,88 @@
-import { Link, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useCart } from '../context/CartContext.jsx'
+import SearchBox from './SearchBox.jsx'
 
 const linkClass = ({ isActive }) =>
   isActive ? 'font-semibold text-orange-600' : 'text-gray-700 hover:text-orange-600'
 
+const badgeClass =
+  'absolute -top-2 right-0 rounded-full bg-orange-600 px-1.5 text-xs text-white'
+const menuItem = 'block w-full px-4 py-2 text-left text-sm hover:bg-gray-50'
+
 export default function Navbar() {
   const { user, logout } = useAuth()
   const { cart } = useCart()
-  const location = useLocation()
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const query = searchParams.get('q') || ''
-
-  function handleSearch(event) {
-    event.preventDefault()
-    const search = new FormData(event.currentTarget).get('q')?.toString().trim() || ''
-    const params = new URLSearchParams(location.pathname === '/products' ? searchParams : '')
-    if (search) params.set('q', search)
-    else params.delete('q')
-    params.delete('page')
-    const queryString = params.toString()
-    navigate(`/products${queryString ? `?${queryString}` : ''}`)
-  }
+  const [open, setOpen] = useState(false)
+  const close = () => setOpen(false)
 
   return (
-    <header className="sticky top-0 z-10 border-b border-gray-200 bg-white">
-      <div className="mx-auto flex max-w-6xl items-center gap-6 px-4 py-3">
+    <header className="sticky top-0 z-20 border-b border-gray-200 bg-white">
+      <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
         <Link to="/" className="text-xl font-bold text-orange-600">
           MyShop
         </Link>
-        <nav className="flex gap-5 text-sm">
+        <nav className="hidden gap-4 text-sm sm:flex">
           <NavLink to="/" end className={linkClass}>
             Home
           </NavLink>
           <NavLink to="/products" className={linkClass}>
             Shop
           </NavLink>
+          <NavLink to="/help" className={linkClass}>
+            Help
+          </NavLink>
         </nav>
-        <form onSubmit={handleSearch} className="flex min-w-0 flex-1">
-          <input
-            key={`${location.pathname}:${query}`}
-            type="search"
-            name="q"
-            defaultValue={query}
-            placeholder="Search products"
-            aria-label="Search products"
-            className="min-w-0 flex-1 rounded-l-md border border-gray-300 px-3 py-1.5 text-sm"
-          />
-          <button
-            type="submit"
-            className="rounded-r-md bg-orange-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-700"
-          >
-            Search
-          </button>
-        </form>
-        <Link to="/cart" className="text-sm font-medium">
-          Cart ({cart.totalItems ?? 0})
+        <SearchBox />
+        <Link to="/cart" className="relative pr-4 text-sm font-medium">
+          Cart
+          {cart.totalItems > 0 && <span className={badgeClass}>{cart.totalItems}</span>}
         </Link>
 
         {user ? (
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-700">Hi, {user.name || user.fullName || 'there'}</span>
+          <div className="relative">
             <button
               type="button"
-              onClick={logout}
-              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:border-gray-400"
+              onClick={() => setOpen((current) => !current)}
+              className="text-sm font-medium"
             >
-              Logout
+              Hi, {(user.fullName || user.name || 'there').split(' ')[0]} &#9662;
             </button>
+            {open && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Close menu"
+                  onClick={close}
+                  className="fixed inset-0 z-10 cursor-default"
+                />
+                <div className="absolute right-0 z-20 mt-2 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                  <Link to="/orders" onClick={close} className={menuItem}>
+                    My orders
+                  </Link>
+                  <Link to="/wishlist" onClick={close} className={menuItem}>
+                    Wishlist
+                  </Link>
+                  <Link to="/account" onClick={close} className={menuItem}>
+                    My account
+                  </Link>
+                  <Link to="/support" onClick={close} className={menuItem}>
+                    Support tickets
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      close()
+                      logout()
+                    }}
+                    className={`${menuItem} text-red-600`}
+                  >
+                    Logout
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <Link

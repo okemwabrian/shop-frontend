@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import * as adminApi from '../../api/admin.js'
+import { adminTickets } from '../../api/admin.js'
 
 export default function AdminTickets() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['admin-tickets'],
-    queryFn: () => adminApi.getAdminTickets({ size: 25 }),
+    queryFn: () => adminTickets({ size: 25 }),
   })
 
   if (isLoading) return <p className="text-sm text-gray-500">Loading tickets…</p>

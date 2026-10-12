@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import * as adminApi from '../../api/admin.js'
+import { getCategories } from '../../api/shop.js'
 
 export default function AdminCategories() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['admin-categories'],
-    queryFn: adminApi.getAdminCategories,
+    queryFn: getCategories,
   })
 
   if (isLoading) return <p className="text-sm text-gray-500">Loading categories…</p>

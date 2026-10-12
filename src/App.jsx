@@ -26,7 +26,7 @@ import AdminTickets from './pages/admin/AdminTickets.jsx'
 import Dashboard from './pages/admin/Dashboard.jsx'
 
 const secure = (page) => <ProtectedRoute>{page}</ProtectedRoute>
-const admin = (page) => <AdminRoute>{page}</AdminRoute>
+const adminOnly = (page) => <AdminRoute roles={['ADMIN']}>{page}</AdminRoute>
 
 export default function App() {
   return (
@@ -48,13 +48,20 @@ export default function App() {
         <Route path="/account" element={secure(<Account />)} />
         <Route path="/support" element={secure(<Tickets />)} />
 
-        <Route path="/admin" element={admin(<AdminLayout />)}>
-          <Route index element={admin(<Dashboard />)} />
-          <Route path="products" element={admin(<AdminProducts />)} />
-          <Route path="categories" element={admin(<AdminCategories />)} />
-          <Route path="orders" element={admin(<AdminOrders />)} />
-          <Route path="tickets" element={admin(<AdminTickets />)} />
-          <Route path="chat" element={admin(<AdminChat />)} />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute roles={['ADMIN', 'SUPPORT']}>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="products" element={adminOnly(<AdminProducts />)} />
+          <Route path="categories" element={adminOnly(<AdminCategories />)} />
+          <Route path="orders" element={adminOnly(<AdminOrders />)} />
+          <Route path="tickets" element={<AdminTickets />} />
+          <Route path="chat" element={<AdminChat />} />
         </Route>
 
         <Route

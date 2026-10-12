@@ -1,41 +1,81 @@
 import { useQuery } from '@tanstack/react-query'
-import * as adminApi from '../../api/admin.js'
+import { Link } from 'react-router-dom'
+import { getProducts } from '../../api/shop.js'
+import { adminOrders, adminTickets, getConversations } from '../../api/admin.js'
+import { useAuth } from '../../context/AuthContext.jsx'
+
+function Stat({ label, value, to }) {
+  return (
+    <Link
+      to={to}
+      className="rounded-lg border border-gray-200 bg-white p-5 hover:shadow-md"
+    >
+      <p className="text-sm text-gray-500">{label}</p>
+      <p className="mt-1 text-3xl font-bold text-orange-600">{value ?? '-'}</p>
+    </Link>
+  )
+}
 
 export default function Dashboard() {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['admin-summary'],
-    queryFn: adminApi.getAdminSummary,
+  const { user } = useAuth()
+  const isAdmin = user.role === 'ADMIN'
+  const pending = useQuery({
+    queryKey: ['stat', 'orders-pending'],
+    queryFn: () => adminOrders({ status: 'PENDING', size: 1 }),
+    enabled: isAdmin,
   })
-
-  if (isLoading) return <p className="text-sm text-gray-500">Loading summary…</p>
-  if (isError || !data) return <p className="text-sm text-red-600">Unable to load dashboard.</p>
-
-  const cards = [
-    { label: 'Orders', value: data.orders ?? 0 },
-    { label: 'Revenue', value: `KES ${Number(data.revenue ?? 0).toLocaleString()}` },
-    { label: 'Open tickets', value: data.openTickets ?? 0 },
-    { label: 'Customers', value: data.customers ?? 0 },
-  ]
+  const products = useQuery({
+    queryKey: ['stat', 'products'],
+    queryFn: () => getProducts({ size: 1 }),
+    enabled: isAdmin,
+  })
+  const tickets = useQuery({
+    queryKey: ['stat', 'tickets-open'],
+    queryFn: () => adminTickets({ status: 'OPEN', size: 1 }),
+  })
+  const chats = useQuery({
+    queryKey: ['conversations'],
+    queryFn: getConversations,
+  })
+  const hasError =
+    pending.isError || products.isError || tickets.isError || chats.isError
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {cards.map((card) => (
-          <div key={card.label} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-gray-500">{card.label}</p>
-            <p className="mt-3 text-2xl font-bold text-gray-900">{card.value}</p>
-          </div>
-        ))}
+    <div>
+      <h1 className="mb-4 text-2xl font-bold">
+        Hello, {(user.fullName || user.name || 'there').split(' ')[0]}
+      </h1>
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {isAdmin && (
+          <>
+            <Stat
+              label="Orders waiting"
+              value={pending.data?.totalElements}
+              to="/admin/orders"
+            />
+            <Stat
+              label="Products"
+              value={products.data?.totalElements}
+              to="/admin/products"
+            />
+          </>
+        )}
+        <Stat
+          label="Open tickets"
+          value={tickets.data?.totalElements}
+          to="/admin/tickets"
+        />
+        <Stat
+          label="Chat conversations"
+          value={chats.data?.length}
+          to="/admin/chat"
+        />
       </div>
-
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900">Operations</h2>
-        <ul className="mt-4 space-y-2 text-sm text-gray-600">
-          <li>• Review recent customer orders and shipping status.</li>
-          <li>• Access support tickets and respond to customer requests.</li>
-          <li>• Manage products, prices, and categories from the admin tools.</li>
-        </ul>
-      </div>
+      {hasError && (
+        <p role="alert" className="mt-3 text-sm text-red-600">
+          Some dashboard figures could not be loaded. Refresh to try again.
+        </p>
+      )}
     </div>
   )
 }

@@ -1,17 +1,19 @@
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 
-export default function AdminRoute({ children }) {
+export default function AdminRoute({ roles = ['ADMIN', 'SUPPORT'], children }) {
   const { user } = useAuth()
-  const location = useLocation()
 
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />
+    return <Navigate to="/login" replace state={{ from: '/admin' }} />
   }
 
-  const role = String(user.role || '').toUpperCase()
-  if (role !== 'ADMIN' && role !== 'SUPPORT') {
-    return <Navigate to="/" replace />
+  if (!roles.includes(user.role)) {
+    return (
+      <p className="py-16 text-center text-red-600">
+        You do not have access to this page.
+      </p>
+    )
   }
 
   return children

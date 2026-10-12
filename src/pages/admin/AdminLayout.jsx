@@ -1,37 +1,51 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext.jsx'
 
+const base = 'block rounded-md px-3 py-2 text-sm '
 const linkClass = ({ isActive }) =>
-  `rounded-md px-3 py-2 text-sm font-medium ${
-    isActive ? 'bg-orange-600 text-white' : 'text-gray-700 hover:bg-gray-100'
-  }`
+  base +
+  (isActive
+    ? 'bg-orange-50 font-semibold text-orange-600'
+    : 'text-gray-700 hover:bg-gray-100')
 
 export default function AdminLayout() {
+  const { user } = useAuth()
+  const isAdmin = user.role === 'ADMIN'
+
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border border-gray-200 bg-white p-4">
-        <nav className="flex flex-wrap gap-2">
+    <div className="grid gap-6 md:grid-cols-5">
+      <aside className="md:col-span-1">
+        <p className="mb-2 text-xs font-semibold uppercase text-gray-400">
+          {isAdmin ? 'Admin' : 'Support'}
+        </p>
+        <nav className="space-y-1">
           <NavLink to="/admin" end className={linkClass}>
             Dashboard
           </NavLink>
-          <NavLink to="/admin/products" className={linkClass}>
-            Products
-          </NavLink>
-          <NavLink to="/admin/categories" className={linkClass}>
-            Categories
-          </NavLink>
-          <NavLink to="/admin/orders" className={linkClass}>
-            Orders
-          </NavLink>
+          {isAdmin && (
+            <>
+              <NavLink to="/admin/products" className={linkClass}>
+                Products
+              </NavLink>
+              <NavLink to="/admin/categories" className={linkClass}>
+                Categories
+              </NavLink>
+              <NavLink to="/admin/orders" className={linkClass}>
+                Orders
+              </NavLink>
+            </>
+          )}
           <NavLink to="/admin/tickets" className={linkClass}>
-            Tickets
+            Support tickets
           </NavLink>
           <NavLink to="/admin/chat" className={linkClass}>
             Live chat
           </NavLink>
         </nav>
-      </div>
-
-      <Outlet />
+      </aside>
+      <section className="md:col-span-4">
+        <Outlet />
+      </section>
     </div>
   )
 }

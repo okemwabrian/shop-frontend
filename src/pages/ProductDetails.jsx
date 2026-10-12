@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { errorMessage } from '../api/client.js'
 import { getProduct, getShareLink } from '../api/shop.js'
@@ -22,7 +23,6 @@ export default function ProductDetails() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionError, setActionError] = useState('')
-  const [message, setMessage] = useState('')
   const [adding, setAdding] = useState(false)
   const [saving, setSaving] = useState(false)
 
@@ -59,13 +59,12 @@ export default function ProductDetails() {
     }
 
     setActionError('')
-    setMessage('')
     setAdding(true)
     try {
       await add(product.id, qty)
-      setMessage('Added to your cart.')
+      toast.success('Added to your cart')
     } catch (err) {
-      setActionError(errorMessage(err))
+      toast.error(errorMessage(err))
     } finally {
       setAdding(false)
     }
@@ -187,14 +186,6 @@ export default function ProductDetails() {
 
         {actionError && (
           <p className="mt-3 text-sm text-red-600">{actionError}</p>
-        )}
-        {message && (
-          <p className="mt-3 text-sm text-green-700">
-            {message}{' '}
-            <Link to="/cart" className="font-medium underline">
-              View cart
-            </Link>
-          </p>
         )}
       </div>
     </div>

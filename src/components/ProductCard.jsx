@@ -1,6 +1,6 @@
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { errorMessage } from '../api/client.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useWishlist } from '../context/WishlistContext.jsx'
 import { money } from '../utils/format.js'
@@ -15,7 +15,6 @@ export default function ProductCard({ product }) {
   const { has, toggle } = useWishlist()
   const navigate = useNavigate()
   const location = useLocation()
-  const [actionError, setActionError] = useState('')
   const [busy, setBusy] = useState(false)
   const wished = has(product.id)
 
@@ -25,12 +24,12 @@ export default function ProductCard({ product }) {
       return
     }
 
-    setActionError('')
     setBusy(true)
     try {
       await toggle(product)
-    } catch (err) {
-      setActionError(errorMessage(err))
+      toast.success(wished ? 'Removed from wishlist' : 'Saved to wishlist')
+    } catch {
+      toast.error('Could not update your wishlist')
     } finally {
       setBusy(false)
     }
@@ -67,11 +66,6 @@ export default function ProductCard({ product }) {
       >
         {wished ? '\u2665' : '\u2661'}
       </button>
-      {actionError && (
-        <p role="alert" className="px-3 pb-3 text-xs text-red-600">
-          {actionError}
-        </p>
-      )}
     </div>
   )
 }

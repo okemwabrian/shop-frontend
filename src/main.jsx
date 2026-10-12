@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { SocketProvider } from './context/SocketContext.jsx'
 import { NotificationProvider } from './context/NotificationContext.jsx'
@@ -34,7 +33,6 @@ createRoot(document.getElementById('root')).render(
                 <CartProvider>
                   <WishlistProvider>
                     <App />
-                    <Toaster position="top-right" />
                   </WishlistProvider>
                 </CartProvider>
               </NotificationProvider>

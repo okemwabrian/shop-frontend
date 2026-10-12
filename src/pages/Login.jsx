@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import GoogleButton from '../components/GoogleButton.jsx'
 
 export default function Login() {
-  const { user, login, register } = useAuth()
+  const { user, login, register, loginWithGoogle } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const [isRegister, setIsRegister] = useState(false)
@@ -38,6 +38,19 @@ export default function Login() {
 
       const from = location.state?.from || '/'
       navigate(from, { replace: true })
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  async function googleSignIn(idToken) {
+    setError('')
+    setIsSubmitting(true)
+    try {
+      await loginWithGoogle(idToken)
+      navigate(location.state?.from || '/', { replace: true })
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -128,13 +141,16 @@ export default function Login() {
         </button>
       </form>
 
-      <div className="my-5 flex items-center gap-3">
-        <div className="h-px flex-1 bg-gray-200" />
-        <span className="text-xs uppercase tracking-[0.2em] text-gray-400">or</span>
-        <div className="h-px flex-1 bg-gray-200" />
-      </div>
-
-      <GoogleButton className="flex justify-center" />
+      {!isRegister && import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+        <>
+          <div className="my-4 flex items-center gap-3 text-xs text-gray-400">
+            <span className="h-px flex-1 bg-gray-200" />
+            or
+            <span className="h-px flex-1 bg-gray-200" />
+          </div>
+          <GoogleButton onToken={googleSignIn} onError={setError} />
+        </>
+      )}
 
       <p className="mt-6 text-center text-sm text-gray-600">
         {isRegister ? 'Already have an account?' : 'Need an account?'}{' '}

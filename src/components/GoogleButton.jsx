@@ -1,26 +1,19 @@
 import { GoogleLogin } from '@react-oauth/google'
-import { useAuth } from '../context/AuthContext.jsx'
 
-export default function GoogleButton({ className = '', onDone }) {
-  const { loginWithGoogle } = useAuth()
+export default function GoogleButton({ onToken, onError }) {
+  if (!import.meta.env.VITE_GOOGLE_CLIENT_ID) return null
 
   return (
-    <div className={className}>
+    <div className="flex justify-center">
       <GoogleLogin
-        onSuccess={async (credentialResponse) => {
-          try {
-            await loginWithGoogle(credentialResponse.credential)
-            onDone?.()
-          } catch (error) {
-            console.error('Google login failed', error)
+        onSuccess={(response) => {
+          if (!response.credential) {
+            onError('Google sign-in failed. Please try again.')
+            return
           }
+          onToken(response.credential)
         }}
-        onError={() => {
-          console.error('Google login failed')
-        }}
-        theme="outline"
-        size="large"
-        text="signin_with"
+        onError={() => onError('Google sign-in failed. Please try again.')}
       />
     </div>
   )

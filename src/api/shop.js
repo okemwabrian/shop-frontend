@@ -55,3 +55,17 @@ export const getShareLink = (productId) =>
   api.get(`/api/whatsapp/share-product/${productId}`).then(data)
 export const getSuggestions = (q) =>
   api.get('/api/products/suggestions', { params: { q } }).then(data)
+
+export const getNotifications = (params) =>
+  api.get('/api/notifications', { params }).then(data)
+export const getUnreadCount = () => api.get('/api/notifications/unread-count').then(data)
+export const markNotificationRead = (id) =>
+  api.patch(`/api/notifications/${id}/read`).then(data)
+export const markAllNotificationsRead = () =>
+  api.patch('/api/notifications/read-all').then(data)
+export const deleteNotification = (id) =>
+  api.delete(`/api/notifications/${id}`).then(data)
+
+export const getChatHistory = () => api.get('/api/chat/history').then(data)
+export const googleLogin = (idToken) =>
+  api.post('/api/auth/google', { idToken }).then(data)

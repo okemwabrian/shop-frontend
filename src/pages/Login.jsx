@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { errorMessage } from '../api/client.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import GoogleButton from '../components/GoogleButton.jsx'
 
 export default function Login() {
   const { user, login, register } = useAuth()
@@ -126,6 +127,14 @@ export default function Login() {
           {isSubmitting ? 'Please wait...' : isRegister ? 'Create account' : 'Login'}
         </button>
       </form>
+
+      <div className="my-5 flex items-center gap-3">
+        <div className="h-px flex-1 bg-gray-200" />
+        <span className="text-xs uppercase tracking-[0.2em] text-gray-400">or</span>
+        <div className="h-px flex-1 bg-gray-200" />
+      </div>
+
+      <GoogleButton className="flex justify-center" />
 
       <p className="mt-6 text-center text-sm text-gray-600">
         {isRegister ? 'Already have an account?' : 'Need an account?'}{' '}

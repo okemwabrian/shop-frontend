@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import ChatWidget from './ChatWidget.jsx'
 import Footer from './Footer.jsx'
 import Navbar from './Navbar.jsx'
 import ScrollToTop from './ScrollToTop.jsx'
@@ -14,6 +15,7 @@ export default function Layout() {
       </main>
       <Footer />
       <WhatsAppButton />
+      <ChatWidget />
     </div>
   )
 }

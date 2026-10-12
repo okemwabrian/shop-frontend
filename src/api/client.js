@@ -1,7 +1,11 @@
 import axios from 'axios'
+import demoAdapter from './demoAdapter.js'
+
+export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  ...(isDemoMode ? { adapter: demoAdapter } : {}),
 })
 
 api.interceptors.request.use((config) => {

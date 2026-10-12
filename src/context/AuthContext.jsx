@@ -28,6 +28,10 @@ export function AuthProvider({ children }) {
     save(await shop.register({ fullName, email, password }))
   }
 
+  async function loginWithGoogle(idToken) {
+    save(await shop.googleLogin(idToken))
+  }
+
   async function logout() {
     try {
       await shop.logoutApi()
@@ -41,7 +45,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, login, register, loginWithGoogle, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

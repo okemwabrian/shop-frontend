@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { Client } from '@stomp/stompjs'
 import { useAuth } from './AuthContext.jsx'
 
@@ -35,16 +42,21 @@ export function SocketProvider({ children }) {
     }
   }, [loggedIn])
 
-  function subscribe(destination, handler) {
-    const client = clientRef.current
-    if (!client || !connected) return () => {}
-    const sub = client.subscribe(destination, (message) => handler(JSON.parse(message.body)))
-    return () => sub.unsubscribe()
-  }
+  const subscribe = useCallback(
+    (destination, handler) => {
+      const client = clientRef.current
+      if (!client || !connected) return () => {}
+      const sub = client.subscribe(destination, (message) =>
+        handler(JSON.parse(message.body)),
+      )
+      return () => sub.unsubscribe()
+    },
+    [connected],
+  )
 
-  function send(destination, body) {
+  const send = useCallback((destination, body) => {
     clientRef.current?.publish({ destination, body: JSON.stringify(body) })
-  }
+  }, [])
 
   return (
     <SocketContext.Provider value={{ connected, subscribe, send }}>

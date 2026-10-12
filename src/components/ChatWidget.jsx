@@ -1,94 +1,153 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { errorMessage } from '../api/client.js'
+import { getChatHistory } from '../api/shop.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useSocket } from '../context/SocketContext.jsx'
 
-const messageClasses = {
-  mine: 'ml-auto bg-orange-600 text-white',
-  theirs: 'mr-auto bg-gray-100 text-gray-800',
-}
-
-export default function ChatWidget() {
-  const { user } = useAuth()
+function CustomerChat({ user }) {
   const { connected, subscribe, send } = useSocket()
   const [open, setOpen] = useState(false)
-  const [draft, setDraft] = useState('')
   const [messages, setMessages] = useState([])
+  const [text, setText] = useState('')
+  const [historyError, setHistoryError] = useState('')
+  const end = useRef(null)
 
   useEffect(() => {
-    if (!user || !connected) return
+    if (!open) return undefined
 
-    const unsubscribe = subscribe('/user/queue/chat', (message) => {
-      setMessages((current) => [...current, { ...message, mine: false }])
+    let active = true
+    getChatHistory()
+      .then((history) => {
+        if (active) {
+          setMessages((current) => {
+            const knownIds = new Set(history.map((message) => message.id))
+            return [
+              ...history,
+              ...current.filter((message) => !knownIds.has(message.id)),
+            ]
+          })
+        }
+      })
+      .catch((error) => {
+        if (active) setHistoryError(errorMessage(error))
+      })
+
+    return () => {
+      active = false
+    }
+  }, [user, open])
+
+  useEffect(() => {
+    if (!user || !connected) return undefined
+
+    return subscribe('/user/queue/chat', (message) => {
+      setMessages((current) =>
+        current.some((existing) => existing.id === message.id)
+          ? current
+          : [...current, message],
+      )
     })
-
-    return unsubscribe
   }, [connected, subscribe, user])
 
-  if (!user) return null
+  useEffect(() => {
+    end.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, open])
 
-  async function sendMessage(event) {
+  function submit(event) {
     event.preventDefault()
-    const text = draft.trim()
-    if (!text) return
+    const content = text.trim()
+    if (!content || !connected) return
 
-    const chatMessage = {
-      text,
-      sentAt: new Date().toISOString(),
-      mine: true,
-    }
+    send('/app/chat.send', { customerId: null, content })
+    setText('')
+  }
 
-    send('/app/chat.send', { text })
-    setMessages((current) => [...current, chatMessage])
-    setDraft('')
+  function toggleOpen() {
+    if (!open) setHistoryError('')
+    setOpen((current) => !current)
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-30">
-      {open ? (
-        <div className="w-80 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl">
-          <div className="flex items-center justify-between bg-gray-900 px-4 py-3 text-sm text-white">
-            <span>Live chat</span>
-            <button type="button" onClick={() => setOpen(false)} className="text-lg leading-none">
-              ×
+    <>
+      {open && (
+        <div className="fixed bottom-36 right-5 z-30 flex h-96 w-80 max-w-[90vw] flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+          <div className="flex items-center justify-between bg-orange-600 px-4 py-3 text-white">
+            <div>
+              <p className="font-semibold">Chat with support</p>
+              <p className="text-xs">{connected ? 'Online' : 'Connecting...'}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Close chat"
+              className="text-xl"
+            >
+              &times;
             </button>
           </div>
 
-          <div className="flex max-h-80 flex-col gap-2 overflow-y-auto bg-gray-50 p-3">
-            {messages.length === 0 ? (
-              <p className="text-sm text-gray-500">Send a message to support.</p>
-            ) : (
-              messages.map((message, index) => (
-                <div
-                  key={`${message.sentAt || index}-${index}`}
-                  className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${messageClasses[message.mine ? 'mine' : 'theirs']}`}
-                >
-                  {message.text}
-                </div>
-              ))
+          <div className="flex-1 space-y-2 overflow-y-auto bg-gray-50 p-3 text-sm">
+            {historyError && (
+              <p role="alert" className="text-center text-xs text-red-600">
+                {historyError}
+              </p>
             )}
+            {messages.length === 0 && (
+              <p className="text-center text-gray-400">
+                Say hello. We usually reply soon.
+              </p>
+            )}
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={message.fromSupport ? 'text-left' : 'text-right'}
+              >
+                <p
+                  className={`inline-block max-w-[85%] whitespace-pre-line rounded-lg px-3 py-2 ${
+                    message.fromSupport
+                      ? 'bg-white text-gray-800 shadow-sm'
+                      : 'bg-orange-600 text-white'
+                  }`}
+                >
+                  {message.content}
+                </p>
+              </div>
+            ))}
+            <div ref={end} />
           </div>
 
-          <form onSubmit={sendMessage} className="flex gap-2 border-t border-gray-200 p-3">
+          <form onSubmit={submit} className="flex border-t border-gray-200">
             <input
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              placeholder="Type a message"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-orange-500"
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+              placeholder="Type a message..."
+              maxLength={2000}
+              className="flex-1 px-3 py-2 text-sm focus:outline-none"
             />
-            <button type="submit" className="rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white">
+            <button
+              type="submit"
+              disabled={!connected || !text.trim()}
+              className="bg-orange-600 px-4 text-sm font-semibold text-white disabled:opacity-50"
+            >
               Send
             </button>
           </form>
         </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="rounded-full bg-orange-600 px-4 py-3 text-sm font-semibold text-white shadow-lg"
-        >
-          Chat with us
-        </button>
       )}
-    </div>
+      <button
+        type="button"
+        onClick={toggleOpen}
+        aria-expanded={open}
+        className="fixed bottom-20 right-5 z-30 rounded-full bg-gray-900 px-5 py-3 text-sm font-semibold text-white shadow-lg hover:bg-gray-700"
+      >
+        {open ? 'Close chat' : 'Chat with support'}
+      </button>
+    </>
   )
+}
+
+export default function ChatWidget() {
+  const { user } = useAuth()
+  if (!user || user.role !== 'CUSTOMER') return null
+  return <CustomerChat key={user.id ?? user.email} user={user} />
 }

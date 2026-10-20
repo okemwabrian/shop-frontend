@@ -1,6 +1,7 @@
-# MyShop frontend
+# SokoChap frontend
 
-React and Vite storefront for the MyShop API.
+React and Vite storefront for SokoChap. The name blends *Soko* (market) and
+*ChapChap* (quickly), signaling fast delivery.
 
 ## Run locally
 

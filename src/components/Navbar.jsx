@@ -23,8 +23,8 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-20 border-b border-gray-200 bg-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3 sm:flex-nowrap sm:gap-4">
-        <Link to="/" className="text-xl font-bold text-orange-600">
-          MyShop
+        <Link to="/" aria-label="SokoChap home" className="shrink-0">
+          <img src="/sokochap-logo.svg" alt="SokoChap" className="h-11 w-auto" />
         </Link>
         <nav className="hidden gap-4 text-sm sm:flex">
           <NavLink to="/" end className={linkClass}>

@@ -8,8 +8,8 @@ export default function Footer() {
     <footer className="border-t border-gray-200 bg-white py-8 text-sm">
       <div className="mx-auto grid max-w-6xl gap-6 px-4 sm:grid-cols-3">
         <div>
-          <p className="text-lg font-bold text-orange-600">MyShop</p>
-          <p className="mt-1 text-gray-500">Quality products, delivered to your door.</p>
+          <img src="/sokochap-logo.svg" alt="SokoChap" className="h-11 w-auto" />
+          <p className="mt-1 text-gray-500">Your market, delivered ChapChap.</p>
         </div>
         <div>
           <p className={heading}>Shop</p>
@@ -26,7 +26,7 @@ export default function Footer() {
         </div>
       </div>
       <p className="mt-6 text-center text-xs text-gray-400">
-        MyShop. All rights reserved.
+        SokoChap. All rights reserved.
       </p>
     </footer>
   )

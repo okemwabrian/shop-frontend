@@ -1,4 +1,5 @@
-const storageKey = 'myshop-demo-state'
+const storageKey = 'sokochap-demo-state'
+const legacyStorageKey = 'myshop-demo-state'
 
 const categories = [
   {
@@ -94,7 +95,8 @@ function initialState() {
 
 function readState() {
   try {
-    return { ...initialState(), ...JSON.parse(localStorage.getItem(storageKey) || '{}') }
+    const storedState = localStorage.getItem(storageKey) ?? localStorage.getItem(legacyStorageKey)
+    return { ...initialState(), ...JSON.parse(storedState || '{}') }
   } catch {
     return initialState()
   }
@@ -381,7 +383,7 @@ export default function demoAdapter(config) {
 
   if (method === 'get' && path === '/api/support/faqs') return response(config, faqs)
   if (method === 'get' && path === '/api/support/contact') return response(config, {
-    email: 'support@myshop.com',
+    email: 'support@sokochap.com',
     phone: '+254112549445',
     hours: 'Mon-Sat, 8:00 to 18:00 (EAT)',
     whatsappLink: 'https://wa.me/254112549445?text=Hello%2C%20I%20need%20help',

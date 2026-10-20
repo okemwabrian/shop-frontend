@@ -10,7 +10,7 @@ import { Client } from '@stomp/stompjs'
 import { useAuth } from './AuthContext.jsx'
 
 const SocketContext = createContext(null)
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+const apiUrl = import.meta.env.VITE_API_URL
 const socketUrl = apiUrl.replace(/^http/, 'ws') + '/ws'
 
 export function SocketProvider({ children }) {

@@ -10,7 +10,7 @@ import { Client } from '@stomp/stompjs'
 import { useAuth } from './AuthContext.jsx'
 
 const SocketContext = createContext(null)
-const apiUrl = import.meta.env.VITE_API_URL
+const apiUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL
 const socketUrl = apiUrl ? apiUrl.replace(/^http/, 'ws') + '/ws' : null
 
 export function SocketProvider({ children }) {

@@ -2,9 +2,11 @@ import axios from 'axios'
 import demoAdapter from './demoAdapter.js'
 
 export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
+const apiBaseUrl =
+  import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: apiBaseUrl,
   ...(isDemoMode ? { adapter: demoAdapter } : {}),
 })
 

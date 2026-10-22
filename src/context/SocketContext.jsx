@@ -11,7 +11,7 @@ import { useAuth } from './AuthContext.jsx'
 
 const SocketContext = createContext(null)
 const apiUrl = import.meta.env.VITE_API_URL
-const socketUrl = apiUrl.replace(/^http/, 'ws') + '/ws'
+const socketUrl = apiUrl ? apiUrl.replace(/^http/, 'ws') + '/ws' : null
 
 export function SocketProvider({ children }) {
   const { user } = useAuth()
@@ -21,7 +21,7 @@ export function SocketProvider({ children }) {
 
   useEffect(() => {
     const token = localStorage.getItem('token')
-    if (!loggedIn || !token) return
+    if (!loggedIn || !token || !socketUrl) return
 
     const client = new Client({
       brokerURL: socketUrl,

@@ -41,3 +41,29 @@ publish directory, and SPA route fallback.
 `VITE_API_BASE_URL` is embedded in the browser bundle at build time, so trigger
 a new deploy after changing it. `VITE_API_URL` remains supported as a legacy
 alias for existing local configurations.
+
+### Troubleshooting login and API requests
+
+Vite injects environment variables into the frontend during the Netlify build;
+changing a variable in Netlify does not update an already-published bundle.
+
+1. Open `https://shoplin.netlify.app/login`, open browser DevTools (**F12**),
+   select **Network**, and submit the login form.
+2. Inspect the failed request URL:
+   - If it points to `localhost`, the published bundle has a stale or missing
+     API URL. In Netlify, confirm `VITE_API_BASE_URL` is
+     `https://shop-backend-z2fb.onrender.com` with no trailing slash, then
+     choose **Deploys → Trigger deploy → Clear cache and deploy site**. Wait
+     until the deploy is published, then hard-refresh the page and retry.
+   - If it points to the Render URL and the browser reports a CORS error, set
+     `CORS_ORIGINS=https://shoplin.netlify.app` in the Render backend
+     environment and redeploy the backend. Confirm the origin is allowed by
+     checking the preflight request in Network.
+   - An HTTP `401` usually indicates missing or invalid login credentials or
+     an expired token. An HTTP `403` can indicate a CORS rejection or that the
+     authenticated user is not permitted; inspect the response and console
+     message to distinguish them.
+3. Confirm catalog requests go to
+   `https://shop-backend-z2fb.onrender.com/api/...` and return successful
+   responses. The first request can take around a minute if the Render
+   free-tier service needs to wake up.

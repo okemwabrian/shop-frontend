@@ -42,6 +42,29 @@ publish directory, and SPA route fallback.
 a new deploy after changing it. `VITE_API_URL` remains supported as a legacy
 alias for existing local configurations.
 
+### Security headers and Content Security Policy
+
+Netlify sends `nosniff`, frame-denial, referrer, and permissions headers for all
+paths. It also sends a `Content-Security-Policy-Report-Only` header; this policy
+does not block resources or change the current login/token flow.
+
+After deployment, inspect the browser console and Network panel with catalog
+images, API calls, WebSocket features, and Google sign-in enabled. Review
+violations before enforcing the policy:
+
+- `style-src` permits inline styles used by the app and Google Identity
+  Services. Confirm these are the only inline-style reports before considering
+  a nonce/hash-based restriction.
+- `img-src` permits HTTPS image hosts because administrators can configure
+  product image URLs. Review reported hosts and narrow this source if product
+  images are hosted on a known set of domains.
+- `connect-src`, `frame-src`, and `script-src` include the deployed backend,
+  its derived secure WebSocket endpoint, and Google Identity Services. Verify
+  the Google sign-in flow and reports against the exact deployed configuration.
+
+The policy is report-only and does not configure a central reporting endpoint;
+review browser reports from deployed sessions before changing it to enforcement.
+
 ### Troubleshooting login and API requests
 
 Vite injects environment variables into the frontend during the Netlify build;
